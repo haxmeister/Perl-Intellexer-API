@@ -4,14 +4,15 @@ use v5.38;
 use strict;
 use warnings;
 use LWP::UserAgent;
+use Path::Tiny;
 use URI;
 use Carp;
 use JSON;
 
 my $json = JSON->new()->pretty(1);
 my $ua   = LWP::UserAgent->new();
-$ua->default_header(
-    "cache-control" => "no-cache" );
+# $ua->default_header(
+#     "cache-control" => "no-cache" );
 # sample request:
 # http://api.intellexer.com/[GET/POST method]?apikey={YourAPIKey}&options={options}
 # api docs:
@@ -44,7 +45,7 @@ sub getTopicsFromFile($self, $file){
         $ua->post(
             $uri_obj,
             Content_Type => 'form-data',
-            Content => [ file => [$file] ]
+            Content => [ path($file)->basename =>[$file] ],
         )
     );
 }
@@ -70,7 +71,7 @@ sub analyzeText($self, $text, %params){
     return $self->_react(
         $ua->post(
             $uri_obj,
-            Content => $text
+            Content => $text,
         )
     );
 }
@@ -105,39 +106,171 @@ sub recognizeNe($self, %params){
     return $self->_react( $ua->get($uri_obj) );
 }
 
-sub recognizeNeFileContent($self, %params){
-    my $uri_obj = $self->_build_url(
+sub recognizeNeFileContent($self, $file, %params){
+
+    my $uri_obj= $self->_build_url(
         'recognizeNeFileContent?',
         %params
-        );
+    );
 
     return $self->_react(
         $ua->post(
             $uri_obj,
             Content_Type => 'multipart/form-data',
-            Content => [ file => [$params{fileName}] ]
+            Content => [file => [$file,] ],
         )
     );
 }
-sub recognizeNeText($self){}
+
+sub recognizeNeText($self, $text, %params){
+    my $uri_obj = $self->_build_url(
+        'recognizeNeText?',
+        %params
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            Content => $text
+        )
+    );
+}
 
 ## Summarizer
-sub summarize_get($self){}
-sub summarize_post($self){}
-sub summarizeText($self){}
-sub summarizeFileContent($self){}
+sub summarize($self, $url, %params){
+    my $uri_obj = $self->_build_url(
+        'summarize?',
+        'url'=> $url,
+        %params,
+        );
+    return $self->_react( $ua->get($uri_obj) );
+}
+
+sub summarizeText($self, $text, %params){
+    my $uri_obj = $self->_build_url(
+        'summarizeText?',
+        %params,
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            Content => $text,
+        )
+    );
+}
+
+sub summarizeFileContent($self, $file, %params){
+
+    my $uri_obj= $self->_build_url(
+        'summarizeFileContent?',
+        'filename' => path($file)->basename,
+        %params
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            Content_Type => 'multipart/form-data',
+            Content => [path($file)->basename => [$file,] ],
+        )
+    );
+}
 
 ## Multi-Document Summarizer
-sub multiUrlSummary($self){}
+sub multiUrlSummary($self, $url_list, %params){
+    my $uri_obj = $self->_build_url(
+        'multiUrlSummary?',
+        %params,
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            'content-type' => 'application/json',
+            Content => $json->encode($url_list),
+        )
+    );
+
+}
 
 ## Comparator
-sub compareText($self){}
-sub compareUrls($self){}
-sub compareUrlwithFile($self){}
-sub compareFiles($self){}
+sub compareText($self, $text1, $text2, %params){
+    my $uri_obj = $self->_build_url(
+        'compareText?',
+        %params,
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            'content-type' => 'application/json',
+            Content => $json->encode({'text1' => $text1, 'text2' => $text2}),
+        )
+    );
+}
+
+sub compareUrls($self, $url1, $url2, %params){
+    my $uri_obj = $self->_build_url(
+        'compareUrls?',
+        'url1' => $url1,
+        'url2' => $url2,
+        %params,
+    );
+
+    return $self->_react(
+        $ua->get(
+            $uri_obj,
+            'content-type' => 'application/json',
+        )
+    );
+
+}
+
+sub compareUrlwithFile($self, $url, $file, %params){
+    my $uri_obj = $self->_build_url(
+        'compareUrlwithFile?',
+        'url' => $url,
+        'filename' => path($file)->basename,
+        %params,
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            'content-type' => 'multipart/form-data',
+            Content => [path($file)->basename => [$file,] ],
+        )
+    );
+}
+
+sub compareFiles($self, $file1, $file2){
+    my $size = -s $file1;
+    my $size2 = -s $file2;
+    say "file1: $size";
+    say "file2: $size2";
+    my $uri_obj = $self->_build_url(
+        'compareFiles?',
+        'filename1' => path($file1)->basename,
+        'filename2' => path($file2)->basename,
+        'firstFileSize' => $size,
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            'content-type' => 'multipart/form-data',
+            Content => [ path($file1)->basename =>[$file1],
+                         path($file2)->basename =>[$file2] ],
+        )
+    );
+}
 
 ## Clusterizer
-sub clusterize($self){}
+sub clusterize($self, $url, %params){
+
+}
+
 sub clusterizeText($self){}
 sub clusterizeFileContent($self){}
 
@@ -163,7 +296,8 @@ sub _build_url( $self, $endpoint, %form){
     my $url = URI->new( $self->{base}.$endpoint);
     $form{'apikey'} = $self->{api_key};
     $url->query_form(\%form);
-    return $url;
+    return $url->as_string;
+    #return $url;
 }
 
 sub _react($self, $response){

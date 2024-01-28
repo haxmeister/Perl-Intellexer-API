@@ -1,8 +1,6 @@
 package Intellexer::API;
 
 use v5.38;
-use strict;
-use warnings;
 use LWP::UserAgent;
 use Path::Tiny;
 use URI;
@@ -246,9 +244,6 @@ sub compareUrlwithFile($self, $url, $file, %params){
 
 sub compareFiles($self, $file1, $file2){
     my $size = -s $file1;
-    my $size2 = -s $file2;
-    say "file1: $size";
-    say "file2: $size2";
     my $uri_obj = $self->_build_url(
         'compareFiles?',
         'filename1' => path($file1)->basename,
@@ -268,26 +263,138 @@ sub compareFiles($self, $file1, $file2){
 
 ## Clusterizer
 sub clusterize($self, $url, %params){
-
+    my $uri_obj = $self->_build_url(
+        'clusterize?',
+        'url'=> $url,
+        %params,
+        );
+    return $self->_react( $ua->get($uri_obj) );
 }
 
-sub clusterizeText($self){}
-sub clusterizeFileContent($self){}
+sub clusterizeText($self, $text, %params){
+    my $uri_obj = $self->_build_url(
+        'clusterizeText?',
+        %params,
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            Content => $text,
+        )
+    );
+}
+
+sub clusterizeFileContent($self, $file, %params){
+    my $size = -s $file;
+    my $uri_obj= $self->_build_url(
+        'clusterizeFileContent?',
+        'filename' => path($file)->basename,
+        'fileSize' => $size,
+        %params
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            Content_Type => 'multipart/form-data',
+            Content => [path($file)->basename => [$file,] ],
+        )
+    );
+}
 
 ## Natural Language Interface
-sub convertQueryToBool($self){}
+sub convertQueryToBool($self, $text){
+    my $uri_obj = $self->_build_url(
+        'convertQueryToBool?',
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            Content => $text,
+        )
+    );
+}
 
 ## Preformator
-sub supportedDocumentStructures($self){}
-sub supportedDocumentTopics($self){}
-sub parse($self){}
-sub parseFileContent($self){}
+sub supportedDocumentStructures($self){
+    my $uri_obj = $self->_build_url(
+        'supportedDocumentStructures?',
+    );
+
+    return $self->_react(
+        $ua->get(
+            $uri_obj,
+        )
+    );
+}
+
+sub supportedDocumentTopics($self){
+    my $uri_obj = $self->_build_url(
+        'supportedDocumentTopics?',
+    );
+
+    return $self->_react(
+        $ua->get(
+            $uri_obj,
+        )
+    );
+}
+
+sub parse($self, $url, %params){
+    my $uri_obj = $self->_build_url(
+        'parse?',
+        'url'=> $url,
+        %params,
+        );
+    return $self->_react( $ua->get($uri_obj) );
+}
+
+sub parseFileContent($self, $file){
+    my $size = -s $file;
+    my $uri_obj= $self->_build_url(
+        'parseFileContent?',
+        'filename' => path($file)->basename,
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            Content_Type => 'multipart/form-data',
+            Content => [path($file)->basename => [$file,] ],
+        )
+    );
+}
 
 ## Language Recognizer
-sub recognizeLanguage($self){}
+sub recognizeLanguage($self, $text){
+    my $uri_obj = $self->_build_url(
+        'recognizeLanguage?',
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            Content => $text,
+        )
+    );
+}
 
 ## SpellChecker
-sub checkTextSpelling($self){}
+sub checkTextSpelling($self, $text, %params){
+    my $uri_obj = $self->_build_url(
+        'checkTextSpelling?',
+        %params,
+    );
+
+    return $self->_react(
+        $ua->post(
+            $uri_obj,
+            Content => $text,
+        )
+    );
+}
 
 ## Support functions
 

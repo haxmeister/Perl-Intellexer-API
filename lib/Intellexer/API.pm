@@ -7,6 +7,8 @@ use URI;
 use Carp;
 use JSON;
 
+our $VERSION = q{0.9}; # update this for each release, dzil gets the version from here 
+
 my $json = JSON->new()->pretty(1);
 my $ua   = LWP::UserAgent->new();
 # $ua->default_header(
@@ -418,3 +420,47 @@ sub _react($self, $response){
 
 
 1;
+
+# ABSTRACT: Perl API client for the Intellexer, a webservice that, "enables developers to embed Intellexer semantics products using XML or JSON." 
+
+__END__
+
+=head1 NAME
+
+Intellexer::API - API client for Intellexer
+
+Perl API client for the Intellexer, a webservice that, "enables developers to embed Intellexer semantics products using XML or JSON." 
+
+=head1 SYNOPSIS
+
+  my $api_key = q{...get this from intellexer.com};
+  my $api = Intellexer::API->new($api_key);
+  my $response = $api->checkTextSpelling(
+      $sample_text,
+      'language' => 'ENGLISH',
+      'errorTune' => '2',
+      'errorBound' => '3',
+      'minProbabilityTune' => '2',
+      'minProbabilityWeight' => '30',
+      'separateLines' => 'true'
+  );
+  say $json->encode($response);
+  
+=head1 DESCRIPTION
+
+Long form description of the module and all the different options
+
+=head1 ENVIRONMENT
+
+.. talk about API key, etc
+
+=head1 BUGS
+
+None. This module is perfect!
+
+=head1 AUTHOR
+
+HAXMEISTER
+
+=head1 LICENSE & COPYRIGHT
+

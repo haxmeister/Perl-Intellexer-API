@@ -1,9 +1,15 @@
 #!/usr/bin/env perl
-use v5.38;
-use FindBin;
-use lib "$FindBin::Bin";
-use Intellexer::API;
+
+use strict;
+use warnings;
+use Test::More;
 use JSON;
+
+use_ok q{Intellexer::API};
+
+done_testing;
+
+__END__
 
 my $json = JSON->new->pretty(1);
 my $sample_text ='AD 2140

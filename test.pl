@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use v5.38;
 use FindBin;
-use lib "$FindBin::Bin";
+use lib "$FindBin::Bin/lib";
 use Intellexer::API;
 use JSON;
 
@@ -60,13 +60,13 @@ my $api = Intellexer::API->new($api_key);
 # );
 
 
-# my $response = $api->recognizeNeFileContent(
-#     'fileName' => $filename,       # name of the file to process
-#     #'fileSize' => $size,          # size of the file to process in bytes (optional)
-#     'loadNamedEntities' => 'True', # load named entities (FALSE by default)
-#     'loadRelationsTree' => 'True', # load tree of relations (FALSE by default)
-#     'loadSentences'     => 'True', # load source sentences (FALSE by default)
-# );
+my $response = $api->recognizeNeFileContent(
+    $filename,                     # name of the file to process
+    #'fileSize' => $size,          # size of the file to process in bytes (optional)
+    'loadNamedEntities' => 'True', # load named entities (FALSE by default)
+    'loadRelationsTree' => 'True', # load tree of relations (FALSE by default)
+    'loadSentences'     => 'True', # load source sentences (FALSE by default)
+);
 
 # my $response = $api->recognizeNeText(
 #     $sample_text,
@@ -161,7 +161,7 @@ my $api = Intellexer::API->new($api_key);
 #     'wrapConcepts' => 'true'
 # );
 
-#my $sampleSize = -s 'sample.txt';
+
 # my $response = $api->clusterizeFileContent(
 #     'sample.txt',
 #     'conceptsRestriction' => '10',
@@ -181,14 +181,14 @@ my $api = Intellexer::API->new($api_key);
 #my $response = $api->parseFileContent('sample.txt');
 
 #my $response = $api->recognizeLanguage($sample_text);
-my $response = $api->checkTextSpelling(
-    $sample_text,
-    'language' => 'ENGLISH',
-    'errorTune' => '2',
-    'errorBound' => '3',
-    'minProbabilityTune' => '2',
-    'minProbabilityWeight' => '30',
-    'separateLines' => 'true'
-);
+# my $response = $api->checkTextSpelling(
+#     $sample_text,
+#     'language' => 'ENGLISH',
+#     'errorTune' => '2',
+#     'errorBound' => '3',
+#     'minProbabilityTune' => '2',
+#     'minProbabilityWeight' => '30',
+#     'separateLines' => 'true'
+# );
 
 say $json->encode($response);

@@ -1,6 +1,6 @@
 package Intellexer::API;
 
-use v5.38;
+use v5.36;
 use LWP::UserAgent;
 use Path::Tiny;
 use URI;

@@ -51,22 +51,22 @@ my $api = Intellexer::API->new($api_key);
 #     'ontology'      => 'Hotels',
 #     'loadSentences' => 'True', # defaults to false
 # );
-#
-# my $response = $api->recognizeNe(
-#     'url' => 'https://en.wikipedia.org/wiki/Boogie',
-#     'loadNamedEntities' => 'True',    # load named entities (FALSE by default)
-#     'loadRelationsTree' => 'True',    # load tree of relations (FALSE by default)
-#     'loadSentences'     => 'True',    # load source sentences (FALSE by default)
-# );
 
-
-my $response = $api->recognizeNeFileContent(
-    $filename,                     # name of the file to process
-    #'fileSize' => $size,          # size of the file to process in bytes (optional)
-    'loadNamedEntities' => 'True', # load named entities (FALSE by default)
-    'loadRelationsTree' => 'True', # load tree of relations (FALSE by default)
-    'loadSentences'     => 'True', # load source sentences (FALSE by default)
+my $response = $api->recognizeNe(
+    'url' => 'https://en.wikipedia.org/wiki/Boogie',
+    'loadNamedEntities' => 'True',    # load named entities (FALSE by default)
+    'loadRelationsTree' => 'True',    # load tree of relations (FALSE by default)
+    'loadSentences'     => 'True',    # load source sentences (FALSE by default)
 );
+
+
+# my $response = $api->recognizeNeFileContent(
+#     $filename,                     # name of the file to process
+#     #'fileSize' => $size,          # size of the file to process in bytes (optional)
+#     'loadNamedEntities' => 'True', # load named entities (FALSE by default)
+#     'loadRelationsTree' => 'True', # load tree of relations (FALSE by default)
+#     'loadSentences'     => 'True', # load source sentences (FALSE by default)
+# );
 
 # my $response = $api->recognizeNeText(
 #     $sample_text,

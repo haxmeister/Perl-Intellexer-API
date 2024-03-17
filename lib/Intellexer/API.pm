@@ -7,7 +7,7 @@ use URI;
 use Carp;
 use JSON;
 
-our $VERSION = q{0.9}; # update this for each release, dzil gets the version from here 
+our $VERSION = q{0.9}; # update this for each release, dzil gets the version from here
 
 my $json = JSON->new()->pretty(1);
 my $ua   = LWP::UserAgent->new();
@@ -421,17 +421,16 @@ sub _react($self, $response){
 
 1;
 
-# ABSTRACT: Perl API client for the Intellexer, a webservice that, "enables developers to embed Intellexer semantics products using XML or JSON." 
+# ABSTRACT: Perl API client for the Intellexer, a webservice that, "enables developers to embed Intellexer semantics products using XML or JSON."
 
 __END__
-
 
 
 =head1 NAME
 
 Intellexer::API - API client for Intellexer
 
-Perl API client for the Intellexer, a webservice that, "enables developers to embed Intellexer semantics products using XML or JSON."
+Perl API client for  L<Intellexer|https://www.intellexer.com/>, a webservice that, "enables developers to embed Intellexer semantics products using XML or JSON."
 
 =head1 SYNOPSIS
 
@@ -449,6 +448,8 @@ Perl API client for the Intellexer, a webservice that, "enables developers to em
   say $json->encode($response);
 
 =head1 DESCRIPTION
+
+An interface to the L<Intellexer|https://www.intellexer.com/> API. This module provides perl methods to all the methods available in the Intellexer API using the same names. This will make it easy for those who want to look for more documentation on the L<Intellexer API help website |https://esapi.intellexer.com/Home/Help>
 
 =head2 Methods
 
@@ -502,10 +503,38 @@ Accepts the text to be analyzed and optionally one or more of the shown paramete
 
     my $response = $api->analyzeText(
         $sample_text,
-        'loadSentences' => 'True', # load source sentences (TRUE by default)
-        'loadTokens'    => 'True', # load information about words of sentences (TRUE by default)
-        'loadRelations' => 'True'  # load information about extracted semantic relations in sentences (TRUE by default)
+        'loadSentences' => 'True',
+        'loadTokens'    => 'True',
+        'loadRelations' => 'True'
     );
+
+B<Response Structure>
+
+    'sentences' - array of processed sentences
+        'text' - text of the sentence with offset information
+            'content' - the sentence plain text
+            'beginOffset' - the start sentence offset in the source text
+            'endOffset' - the end sentence offset in the source text
+        'tokens' - list of tokens extracted from sentences
+            'text' - text of the token with offset information
+                'content' - the token plain text
+                'beginOffset' - the start token offset in the source sentence
+                'endOffset' - the end token offset in the source sentence
+            'partOfSpeechTag' - token part of speech tag (the tagset is a generalized version of the Lancaster-Oslo/Bergen (LOB) tagset and consist of 37 tags)
+                'lemma' - initial token form
+        'relations' - array of extracted subject-verb-object relations
+        'tokens' - list of tokens extracted from sentences
+            'text' - text of the token with offset information
+                'content' - the token plain text
+                'beginOffset' - the start token offset in the source sentence
+                'endOffset' - the end token offset in the source sentence
+            'partOfSpeechTag' - token part of speech tag (the tagset is a generalized version of the Lancaster-Oslo/Bergen (LOB) tagset and consist of 37 tags)
+                'lemma' - initial token form
+        'relations' - array of extracted subject-verb-object relations
+            'subject' - subject field
+            'verb' - verb field
+            'object' - object field
+            'adverbialPhrase' - adverbial phrase field
 
 =head3 Sentiment Analyzer
 
@@ -555,6 +584,24 @@ Accepts a reference to a list of reviews and the shown parameters
         'loadSentences' => 'True',   # defaults to false
     );
 
+B<Response Structure>
+
+    'sentimentsCount' - number of processed reviews
+    'ontology' - ontology used to group the results
+    'sentences' - array of processed sentences
+        'sid' - review identifier
+        'text' - text of the sentence with the sentiment tags (pos - positive words, neg - negative words and obj - sentiment objects)
+        'w' - sentiment weight of the sentence (0 - neutral information, <0 - negative information, >0 - positive information)
+    'opinions' - tree of categorized opinions (opinion objects with sentiment phrases)
+        't' - text of the opinion object, opinion phrase or the title of an ontology category
+        'w' - sentiment weight of the opinion (negative or positive values are used for opinion phrases, zero values - for objects or ontology categories)
+    'sentiments' - additional information about the processed reviews
+        'author' - author of the review
+        'dt' - date and time when the review was written
+        'id' - review identifier
+        'title' - review title
+        'w' - sentiment weight of the review. This parameter is used to classify the whole text of a review as expressing a positive, neutral or negative opinion
+
 
 =head3 Named Entity Recognizer
 
@@ -601,6 +648,27 @@ Load Named Entities from a document from a given URL. Accepts the shown paramete
         'loadSentences'     => 'True',    # load source sentences (FALSE by default)
     );
 
+B<Response Structure>
+
+    'document' - information about the text
+        'id' - document identifier
+        'size' - document size in bytes
+        'title' - document title
+        'url' - source of the request
+        'error' - information about processing errors
+        'sizeFormat' - formatted document size
+    'entities' - array of detected entities
+        'sentenceIds' - array of sentence identifiers containing extracted entities
+        'type' -entity type. Possible values: 0 - Unknown, 1 - Person, 2 - Organization, 3 - Location, 4 - Title, 5 - Position, 6 - Age, 7 - Date, 8 - Duration, 9 - Nationality, 10 - Event, 11 - Url, 12 - MiscellaneousLocation
+        'wc' - number of words in the entity
+        'text' - entity text
+    'sentences' - array of processed sentences
+    'relationsTree' - tree of relations among the detected entities
+        'entityText' - entity text
+        'sentenceIds' - array of sentence identifiers
+        'text' - entity text along with the entity type identifier
+        'type' - entity type
+
 =head4 C<recognizeNeFileContent($file_path, %params)>
 
 Load Named Entities from a file. Accepts a file path and the shown parameters as arguments.
@@ -613,6 +681,22 @@ Load Named Entities from a file. Accepts a file path and the shown parameters as
         'loadSentences'     => 'True',
     );
 
+B<Response Structure>
+
+    'document' - information about the text
+    'entities' - array of the detected entities
+        'sentenceIds' - array of sentence identifiers
+        'type' - entity type. Possible values: 0 - Unknown, 1 - Person, 2 - Organization, 3 - Location, 4 - Title, 5 - Position, 6 - Age, 7 - Date, 8 - Duration, 9 - Nationality, 10 - Event, 11 - Url, 12 - MiscellaneousLocation
+        'wc' - number of words in the entity
+        'text' - entity text
+    'sentences' - array of processed sentences
+    'relationsTree' - tree of relations among the detected entities
+        'entityText' -entity text
+        'sentenceIds' - array of sentence identifiers containing detected entities
+        'text' - entity text along with the entity type identifier
+        'type' - entity type
+
+
 =head4 C<recognizeNeText($text, %params)>
 
 Load Named Entities from a text. Accepts a sample text and the shown parameters.
@@ -624,6 +708,20 @@ Load Named Entities from a text. Accepts a sample text and the shown parameters.
        'loadSentences'     => 'True',
     );
 
+B<Response Structure>
+
+    'document' - information about the text
+    'entities' - array of detected named entities
+        'sentenceIds' - array of sentence identifiers
+        'type' - entity type. Possible values: 0 - Unknown, 1 - Person, 2 - Organization, 3 - Location, 4 - Title, 5 - Position, 6 - Age, 7 - Date, 8 - Duration, 9 - Nationality, 10 - Event, 11 - Url, 12 - MiscellaneousLocation
+        'wc' - number of words in the entity
+        'text' - entity text
+    'sentences' - array of processed sentences
+    'relationsTree' - tree of relations among the detected entities
+        'entityText' - entity text
+        'sentenceIds' - array of sentence identifiers containing detected entities
+        'text' - entity text along with entity type identifier
+        'type' - entity type
 
 =head3 Summarizer
 
@@ -677,7 +775,7 @@ wrapConcepts - mark concepts found in the summary with HTML bold tags (FALSE by 
 
 =head4 C<summarize($url, %params)>
 
-Return summary data for a document from a given URL. Accepts a valid URL as the first argument then any parameters.
+Returns summary data for a document from a given URL. Accepts a valid URL as the first argument then any parameters.
 
     my $response = $api->summarize(
         $url,
@@ -694,6 +792,34 @@ Return summary data for a document from a given URL. Accepts a valid URL as the 
        'wrapConcepts'          => 'true'
     );
 
+B<Response Structure>
+
+    'summarizerDoc' - information about the text
+        'id' - document identifier
+        'size' - document size in bytes
+        'title' - document title
+        'url' - source of the request
+        'error' - information about processing errors
+        'sizeFormat' - formatted document size
+    'structure' - document structure
+    'topics' - array of detected document topics
+    'items' - summary items (important document sentences)
+        'text' - text of the summary item
+        'rank' - item rank. Larger rank means greater importance of the sentence
+        'weight' - item weight
+    'totalItemsCount' - total number of processed sentences
+    'conceptTree' - tree of important document concepts
+        'sentenceIds' - array of sentence identifiers containing detected concepts
+        'text' - concept text
+        'w' - concept weight
+        'mp' - "main phrase" - meaningful/important concepts used in NE relations tree
+        'st' - "status" - concept value change from 0 to 1, if the concept was selected for Rearrange operation
+        'children' array - concept tree that consists of root nodes (for ex. retrieval) and children nodes (for ex. information retrieval)
+    'namedEntityTree' - tree of relations among the detected entities
+        'entityText' - entity text
+        'sentenceIds' - array of sentence identifiers containing detected entities
+        'text' - entity text
+        'w' - entity weight
 
 =head4 C<summarizeText($text, %params)>
 
@@ -701,11 +827,69 @@ Return summary data for a text. Accepts text as first argument then any paramete
 
  my $response = $api->summarizeText( $sample_text, %params );
 
+ Response Summary:
+
+     'summarizerDoc' - information about the text
+        'id' - document identifier
+        'size' - document size in bytes
+        'title' - document title
+        'url' - source of the request
+        'error' - information about processing errors
+        'sizeFormat' - formatted document size
+    'structure' - document structure
+    'topics' - array of detected document topics
+    'items' - summary items (important document sentences)
+        'text' - text of the summary item
+        'rank' - item rank. Larger rank means greater importance of the sentence
+        'weight' - item weight
+    'totalItemsCount' - total number of processed sentences
+    'conceptTree' - tree of important document concepts
+        'sentenceIds' - array of sentence identifiers containing  detected concepts
+        'text' - concept text
+        'w' - concept weight
+        'mp' - "main phrase" - meaningful/important concepts used in NE relations tree
+        'st' - "status" - concept value change from 0 to 1, if the concept was selected for Rearrange operation
+        'children' array - concept tree that consists of root nodes (for ex. retrieval) and children nodes (for ex. information retrieval)
+    'namedEntityTree' - tree of relations among the detected entities
+        'entityText' - entity text
+        'sentenceIds' - array of sentence identifiers containing detected entities
+        'text' - entity text
+        'w' - entity weight
+
 =head4 C<summarizeFileContent($file_path, %params)>
 
 Return summary data for a text file. Accepts a file path as first argument then any parameters.
 
  my $response = $api->summarizeFileContent( $file_path, %params );
+
+B<Response Structure>
+
+    'summarizerDoc' - information about the text
+        'id' - document identifier
+        'size' - document size in bytes
+        'title' - document title
+        'url' - source of the request
+        'error' - information about processing errors
+        'sizeFormat' - formatted document size
+    'structure' - document structure
+    'topics' - array of detected document topics
+    'items' - summary items (important document sentences)
+        'text' - text of the summary item
+        'rank' - item rank. Larger rank means greater importance of the sentence
+        'weight' -item weight
+    'totalItemsCount' - total number of processed sentences
+    'conceptTree' - tree of important document concepts
+        'sentenceIds' - array of sentence identifiers containing detected concepts
+        'text' - concept text
+        'w' - concept weight
+        'mp' - "main phrase" - meaningful/important concepts used in NE relations tree
+        'st' - "status" - concept value change from 0 to 1, if the concept was selected for Rearrange operation
+        'children' array - concept tree that consists of root nodes (for ex. retrieval) and children nodes (for ex. information retrieval)
+    'namedEntityTree' - tree of relations among the detected entities
+        'entityText' - entity text
+        'sentenceIds' - array of sentence identifiers containing detected entities
+        'text' - entity text
+        'w' - entity weight
 
 =head3 Multi-Document Summarizer
 
@@ -781,6 +965,31 @@ Accepts a reference to a list of valid URLs and then any parameters.
      'wrapConcepts'          => 'true'
  );
 
+B<Response Structure>
+
+    'documents' - information about the documents
+        'id' - document identifier
+        'size' - document size in bytes
+        'title' - document title
+        'url' - source of the request
+        'error' - information about processing errors
+        'sizeFormat' - formatted document size
+    'topics' - array of detected document topics
+    'structure' - document structure
+    'items' - multi-document summary items (important document sentences)
+        'text' - item text
+        'rank' - item rank. Larger rank means greater importance of the sentence
+        'weight' - item weight
+    'conceptTree' - tree of important document concepts
+        'mp' - "main phrase" - meaningful/important concepts used in NE relations tree
+        'st' - "status" - concept value change from 0 to 1, if the concept was selected for Rearrange operation
+        'children' array - concept tree that consists of root nodes (for ex. retrieval) and children nodes (for ex. information retrieval)
+    'namedEntityTree' - tree of relations among the detected entities
+    'relatedFactsQuery' - query for related facts extraction (most important concepts and document sentences related to the query)
+    'relatedFactsTree' - related facts tree along with the facts about the extracted concepts
+        'sentenceIds' - array of sentence containing detected facts
+        'text' - fact text
+        'w' - fact weight
 
 =head3 Comparator
 
@@ -795,6 +1004,24 @@ B<Parameters>
 useCache - if TRUE, document content will be loaded from cache if there is any
 
 =back
+
+B<Response Structure>
+
+    'proximity' - proximity between documents. The proximity is calculated within the range of 0-1, where 0 means "completely different texts" and 1 means "completely identical texts"
+    'document1' - information about the first document
+        'id' - document identifier
+        'size' - document size in bytes
+        'title' - document title
+        'url' - source of the request
+        'error' - information about processing errors
+        'sizeFormat' - formatted document size
+    'document2' - information about the second document
+        'id' - document identifier
+        'size' - document size in bytes
+        'title' - document title
+        'url' - source of the request
+        'error' - information about processing errors
+        'sizeFormat' - formatted document size
 
 =head4 C<compareText( $text1, $text2 )>
 
@@ -850,6 +1077,17 @@ loadSentences - load all sentences
 wrapConcepts - mark concepts found in the summary with HTML bold tags (FALSE by default)
 
 =back
+
+B<Response Structure>
+
+    'conceptTree' - tree of important document concepts
+        'sentenceIds' - array of sentence identifiers containing detected concepts
+        'text' - concept text
+        'w' - concept weight
+        'mp' - "main phrase" - meaningful/important concepts used in NE relations tree
+        'st' - "status" - concept value change from 0 to 1, if the concept was selected for Rearrange operation
+        'children' array - concept tree that consists of root nodes (for ex. retrieval) and children nodes (for ex. information retrieval)
+    'sentences' - array of processed sentences
 
 =head4 C<clusterize($url, %params)>
 
@@ -918,6 +1156,16 @@ Return available Preformator Document topics.
 
 =head4 C<parse( $url, %params )>
 
+B<Response Structure>
+
+    'structure' - document structure
+    'topics' - array of detected document topics
+    'lang' - document language
+    'langId' - language identifier
+    'inputSize' - size of the document before processing
+    'size' - size of extracted plain text
+    'text' - plain text from the input document
+
 Parse internet/intranet file content using Preformator. Accepts a valid URL followed by any parameters.
 
  my $response = $api->parse( $url, 'getTopics' => 'true');
@@ -928,6 +1176,15 @@ Parse file content using Preformator. Accepts a single argument that is a valid 
 
  my $response = $api->parse( $file_path );
 
+B<Response Structure>
+
+    'structure' - document structure
+    'topics' - array of detected document topics
+    'lang' - document language
+    'langId' - language identifier
+    'inputSize' - size of the document before processing
+    'size' - size of extracted plain text
+    'text' - plain text from the input document
 
 =head3 Language Recognizer
 
@@ -938,6 +1195,13 @@ Identifies the language and character encoding of incoming documents.
 Recognize language and encoding of an input text stream. Accepts one argument that is the text to be analyzed.
 
  my $response = $api->recognizeLanguage( $text );
+
+B<Response Structure>
+
+    'languages' - array of detected languages
+    'language' - document language
+    'encoding' - document encoding
+    'weight' - language weight. Lar
 
 =head3 Spellchecker
 
@@ -1003,6 +1267,20 @@ Perform text spell check. Accepts the text as the first argument, followed by an
      'separateLines'        => 'true'
  );
 
+B<Response Structure>
+
+    'inputSize' - size of the document
+    'sentencesCount' - number of processed sentences
+    'processedSentences' - array of corrected sentences
+    'sourceSentences' - array of source sentences
+    'corrections' - array of candidate corrections
+        'l' - length of the candidate correction
+        'ndx' - index of the sentence with a spelling error
+        's' - the offset of the error
+        'v' - array of candidate corrections
+            't' - correction text
+            'w' - correction weight. Larger weight means greater relevance of the candidate correctionmeans greater  relevance of the detected language
+
 =head1 ENVIRONMENT
 
 An API key is required to access the Intellexer API. You can get one free for 30 days.
@@ -1023,7 +1301,7 @@ L<https://github.com/haxmeister/Perl-Intellexer-API>
 
 =head1 AUTHOR
 
-HAXMEISTER (Joshua S. Day)
+HAX (Joshua S. Day)
 E<lt>haxmeister@hotmail.comE<gt>
 
 =head1 LICENSE & COPYRIGHT

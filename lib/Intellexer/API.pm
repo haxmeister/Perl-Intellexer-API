@@ -7,7 +7,7 @@ use URI;
 use Carp;
 use JSON;
 
-our $VERSION = q{0.9}; # update this for each release, dzil gets the version from here
+our $VERSION = q{0.91}; # update this for each release, dzil gets the version from here
 
 my $json = JSON->new()->pretty(1);
 my $ua   = LWP::UserAgent->new();
